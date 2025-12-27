@@ -24,3 +24,5 @@ export const PAGINATION = {
   DEFAULT_PAGE_SIZE: 9,
   RELATED_PRODUCT_PAGE_SIZE: 5,
 };
+
+export const SEPARATOR = "-%-";

@@ -60,13 +60,14 @@ const productSchema = JOI.object({
 
 export const getProductsByBrand = async (req: Request, res: Response) => {
   const { error } = schema.validate(req.params);
+  const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
   const brand = req.params.brandName;
-  const result = await getProductByBrand(brand);
-  const { status, response } = result;
-  res.status(status).json(response);
+  const result = await getProductByBrand(brand, page);
+  const { status, products } = result;
+  res.status(status).json(result);
 };
 
 export const createProductController = async (req: Request, res: Response) => {
@@ -85,7 +86,10 @@ export const getAllNewArrivalsProducts = async (
   req: Request,
   res: Response
 ): Promise<any> => {
-  const products = await productService.getNewArrivalsProducts();
+  const products = await productService.getNewArrivalsProducts(
+    9,
+    Number(req.query.page) || 1
+  );
   res.status(200).json(products);
 };
 
@@ -104,7 +108,8 @@ export const findProductsByText = async (
   res: Response
 ): Promise<any> => {
   const text = req.params.text;
-  const products = await productService.findProductsByText(text);
+  const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+  const products = await productService.findProductsByText(text, page);
   res.status(200).json(products);
 };
 
@@ -133,13 +138,11 @@ export const findProductsByCategory = async (
   req: Request,
   res: Response
 ): Promise<any> => {
-  if (req.query.page === undefined) {
-    return res.status(400).json({
-      message: "You should provide a page number in URL as query params",
-    });
-  }
   // Validate page number using Joi
-  const { error: err } = productIdSchema.validate(req.query.page);
+  if (!req.query.page) {
+    req.query.page = "1";
+  }
+  const { error: err } = productIdSchema.validate(Number(req.query.page));
   if (err) {
     return res.status(400).json({
       message: "Page number should be positive integer number",

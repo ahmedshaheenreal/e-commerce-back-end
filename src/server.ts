@@ -16,12 +16,21 @@ import cartRouter from "./routes/cartRoutes";
 import { ratingRouter } from "./routes/ratingRoutes";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swaggerConfig";
-
+import cors from "cors";
 dotenv.config();
 
 // dotenv.configDotenv();
 
 export const app = express();
+
+const corsOptions = {
+  origin: "http://localhost:3000", // your frontend URL
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // if using cookies or auth headers
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 const PORT = Number(process.env.PORT) || 3000;
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

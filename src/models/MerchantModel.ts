@@ -53,7 +53,7 @@ export const Merchant = sequelize.define(
       allowNull: false,
       validate: {
         isNumeric: true,
-        len: [10, 15], // Assuming phone numbers are between 10-15 digits
+        // len: [10, 15], // Assuming phone numbers are between 10-15 digits
       },
     },
     createdAt: {

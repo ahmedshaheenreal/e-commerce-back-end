@@ -24,9 +24,9 @@ export const Category = sequelize.define(
     },
     image_url: {
       type: DataTypes.TEXT,
-      validate: {
-        isUrl: true,
-      },
+      // validate: {
+      //   isUrl: true,
+      // },
     },
     createdAt: {
       type: DataTypes.DATE,

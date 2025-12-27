@@ -1,5 +1,5 @@
 // Import the constants
-import { CONSTANTS, FIELD_NAMES, RATING } from "../constants";
+import { CONSTANTS, FIELD_NAMES, PAGINATION, RATING } from "../constants";
 
 // Import product model
 import { Product } from "../models/ProductModel";
@@ -18,6 +18,8 @@ import { Op, Sequelize } from "sequelize";
 import { response } from "express";
 import { OrderItem } from "../models/OrderItem";
 import { CartItem } from "../models/CartItemModel";
+import { number } from "joi";
+import { error } from "console";
 
 export class productService {
   // This method to add discount information to product information
@@ -35,7 +37,7 @@ export class productService {
     );
   }
   // Method to retrieve new arrival products with optional limit
-  static async getNewArrivalsProducts(limit?: number) {
+  static async getNewArrivalsProducts(limit?: number, page?: number) {
     const currentDate = new Date();
 
     // Calculate the start date of the previous three months
@@ -51,39 +53,41 @@ export class productService {
           },
         },
         raw: true,
-        attributes: [
-          "product_id",
-          "name",
-          "price",
-          "brand_name",
-          "discount_percentage",
-          "product_image_url",
-        ],
       };
 
       // Add limit if provided
       if (limit !== undefined) {
         queryOptions.limit = limit;
+        queryOptions.offset = page !== undefined ? (page - 1) * limit : 0;
       }
 
       // Fetch products
       const newProducts: any[] = await Product.findAll(queryOptions);
-
+      const totalCount: number = await Product.count({
+        where: {
+          createdAt: {
+            [Op.between]: [threeMonthsAgo, currentDate],
+          },
+        },
+      });
       // Process products and clean up fields
       newProducts.forEach((product) => {
         this.addDiscountInfo(product); // Add discount info
       });
 
-      return newProducts;
+      return {
+        products: newProducts,
+        totalCount,
+        numberOfPages: Math.ceil(totalCount / (limit || 9)),
+      };
     } catch (error) {
       console.error("Error fetching new arrivals:", error);
-      throw new Error("Failed to fetch new arrival products.");
     }
   }
 
   // This method to get all products that matched user search
-  static async findProductsByText(text: string) {
-    const products: any = await Product.findAll({
+  static async findProductsByText(text: string, page?: number) {
+    const { count, rows: products }: any = await Product.findAndCountAll({
       where: {
         [Op.or]: [
           {
@@ -109,11 +113,17 @@ export class productService {
         "NumberOfRatings",
       ],
       raw: true,
+      offset: page && page > 0 ? (page - 1) * PAGINATION.DEFAULT_PAGE_SIZE : 0,
+      limit: PAGINATION.DEFAULT_PAGE_SIZE,
     });
     for (const product of products) {
       this.addDiscountInfo(product);
     }
-    return products;
+    return {
+      products,
+      count,
+      numberOfPages: Math.ceil(count / PAGINATION.DEFAULT_PAGE_SIZE),
+    };
   }
   // This method to get a specific product based on id
   static async findProductById(product_id: number) {
@@ -253,19 +263,28 @@ export class productService {
   }
 }
 
-export const getProductByBrand = async (brand: string) => {
+export const getProductByBrand = async (brand: string, page: number) => {
   try {
-    const products = await Product.findAll({
+    const { rows: products, count } = await Product.findAndCountAll({
       where: {
-        brand_name: brand,
+        brand_name: `${brand}`,
       },
+      limit: 12,
+      offset: page && page > 0 ? (page - 1) * 12 : 0,
     });
-    if (products.length === 0) {
-      return { status: 404, response: "No products found" };
+
+    for (const product of products) {
+      productService.addDiscountInfo(product.dataValues);
     }
-    return { status: 200, response: products };
+    console.log("products by brand: ", products);
+    return {
+      status: 200,
+      products: products,
+      count,
+      numberOfPages: Math.ceil(count / 12),
+    };
   } catch (error) {
-    return { status: 500, response: error };
+    return { status: 500, error };
   }
 };
 
