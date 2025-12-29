@@ -20,6 +20,7 @@ import { OrderItem } from "../models/OrderItem";
 import { CartItem } from "../models/CartItemModel";
 import { number } from "joi";
 import { error } from "console";
+import { Category } from "../models/CategoryModel";
 
 export class productService {
   // This method to add discount information to product information
@@ -128,7 +129,13 @@ export class productService {
   // This method to get a specific product based on id
   static async findProductById(product_id: number) {
     const product: any = await Product.findByPk(product_id, {
-      raw: true,
+      include: [
+        {
+          model: Category,
+          through: { attributes: [] },
+          attributes: ["category_id", "name", "description"],
+        },
+      ],
       attributes: [
         "product_id",
         "name",
