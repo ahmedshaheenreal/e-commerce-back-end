@@ -17,6 +17,7 @@ import { ratingRouter } from "./routes/ratingRoutes";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swaggerConfig";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 dotenv.config();
 
 // dotenv.configDotenv();
@@ -31,6 +32,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+app.use(cookieParser());
 app.use(express.json());
 const PORT = Number(process.env.PORT) || 3000;
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

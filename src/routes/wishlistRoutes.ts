@@ -1,15 +1,20 @@
 import { Router } from "express";
 import wishlistController from "../controllers/wishlistController";
+import { verifyToken } from "../utils/verifyToken";
 
 const router = Router();
 
 // Route to create a new wishlist item
-router.post("/", wishlistController.createWishlistItem);
+router.post("/", verifyToken, wishlistController.createWishlistItem);
 
 // Route to get all wishlist items for a user
-router.get("/:userId", wishlistController.getAllWishlistItems);
+router.get("/", verifyToken, wishlistController.getAllWishlistItems);
 
 // Route to delete a wishlist item by wishlistId
-router.delete("/:wishlistId", wishlistController.deleteWishlistItem);
+router.delete(
+  "/:wishlistId",
+  verifyToken,
+  wishlistController.deleteWishlistItem
+);
 
 export default router;

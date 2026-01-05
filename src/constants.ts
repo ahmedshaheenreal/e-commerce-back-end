@@ -22,7 +22,20 @@ export const RATING = {
 
 export const PAGINATION = {
   DEFAULT_PAGE_SIZE: 9,
-  RELATED_PRODUCT_PAGE_SIZE: 5,
+  RELATED_PRODUCT_PAGE_SIZE: 4,
 };
 
 export const SEPARATOR = "-%-";
+
+export const accessCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  maxAge: 15 * 60 * 1000, // 15 minutes
+};
+export const refreshCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  maxAge: 15 * 24 * 3600 * 60 * 1000, // 15 days
+};

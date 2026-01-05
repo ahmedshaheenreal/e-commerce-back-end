@@ -37,8 +37,7 @@ export default class CartController {
 
   // Get all items in a user's cart
   static async getUserCart(req: Request, res: Response) {
-    const { userId } = req.params;
-    console.log("user id : ", userId);
+    const userId = (req as any).token.id;
 
     // Input validation
     if (!userId || isNaN(parseInt(userId))) {
@@ -50,6 +49,7 @@ export default class CartController {
 
     try {
       const cartItems = await CartService.getUserCart(parseInt(userId));
+      console.log(cartItems);
       res.status(200).json(cartItems);
     } catch (error: any) {
       res.status(500).json({ message: "Error fetching cart items.", error });

@@ -5,7 +5,7 @@ export default class WishlistController {
   // Create a new wishlist item
   static async createWishlistItem(req: Request, res: Response) {
     const { userId, productId } = req.body;
-
+    console.log(req.body);
     // Input validation
     if (
       !userId ||
@@ -16,6 +16,7 @@ export default class WishlistController {
       res.status(400).json({
         message: "Invalid userId or productId. They must be valid numbers.",
       });
+      console.log("Validation Error::---WishList");
       return;
     }
 
@@ -33,8 +34,8 @@ export default class WishlistController {
 
   // Get all wishlist items for a user
   static async getAllWishlistItems(req: Request, res: Response) {
-    const { userId } = req.params;
-
+    // const { userId } = req.params;
+    const userId = (req as any).token?.id;
     // Input validation
     if (!userId || isNaN(parseInt(userId))) {
       res.status(400).json({
