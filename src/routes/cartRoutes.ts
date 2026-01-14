@@ -4,7 +4,7 @@ import { verifyToken } from "../utils/verifyToken";
 const cartRouter = Router();
 
 // Route to add an item to the cart
-cartRouter.post("/", cartController.addItemToCart);
+cartRouter.post("/", verifyToken, cartController.addItemToCart);
 
 // Route to get all cart items for a user
 cartRouter.get("/", verifyToken, cartController.getUserCart);

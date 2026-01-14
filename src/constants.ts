@@ -31,7 +31,7 @@ export const accessCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
-  maxAge: 15 * 60 * 1000, // 15 minutes
+  maxAge: 15 * 60 * 1000 + 60 * 1000, // 15 minutes
 };
 export const refreshCookieOptions = {
   httpOnly: true,

@@ -5,7 +5,10 @@ export default class CartController {
   // Add an item to the cart
   static async addItemToCart(req: Request, res: Response) {
     const { userId, productId, quantity } = req.body;
-
+    if (parseInt(userId) !== (req as any).token.id) {
+      res.status(403).json({ nmessage: "Unauthorized" });
+      return;
+    }
     // Input validation
     if (
       !userId ||
@@ -31,6 +34,7 @@ export default class CartController {
 
       res.status(201).json(newCartItem);
     } catch (error: any) {
+      console.log(error);
       res.status(500).json({ message: error.message, error });
     }
   }
@@ -38,7 +42,6 @@ export default class CartController {
   // Get all items in a user's cart
   static async getUserCart(req: Request, res: Response) {
     const userId = (req as any).token.id;
-
     // Input validation
     if (!userId || isNaN(parseInt(userId))) {
       res.status(400).json({
@@ -52,6 +55,7 @@ export default class CartController {
       console.log(cartItems);
       res.status(200).json(cartItems);
     } catch (error: any) {
+      console.log("GET CART ERROR: ", error);
       res.status(500).json({ message: "Error fetching cart items.", error });
     }
   }
@@ -90,7 +94,7 @@ export default class CartController {
   // Remove an item from the cart
   static async removeCartItem(req: Request, res: Response) {
     const { cartItemId } = req.params;
-
+    const userId = (req as any).token.id;
     // Input validation
     if (!cartItemId || isNaN(parseInt(cartItemId))) {
       res.status(400).json({
@@ -100,14 +104,17 @@ export default class CartController {
     }
 
     try {
-      const deleted = await CartService.removeCartItem(parseInt(cartItemId));
+      const { cart, deleted } = await CartService.removeCartItem(
+        parseInt(cartItemId),
+        Number(userId)
+      );
 
       if (!deleted) {
         res.status(404).json({ message: "Cart item not found." });
         return;
       }
 
-      res.status(200).json({ message: "Cart item deleted successfully." });
+      res.status(200).json({ cart, deleted });
     } catch (error) {
       res.status(500).json({ message: "Error deleting cart item.", error });
     }

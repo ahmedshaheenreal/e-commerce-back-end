@@ -1,5 +1,6 @@
 import { CartItem } from "../models/CartItemModel";
 import { Product } from "../models/ProductModel";
+import { productService } from "./productService";
 
 export default class CartService {
   // Add item to the cart after checking stock
@@ -34,11 +35,32 @@ export default class CartService {
 
   // Get all items in a user's cart
   static async getUserCart(userId: number) {
+    let totalPriceBeforeDiscount = 0;
+    let totalPriceAfterDiscount = 0;
     const cartItems = await CartItem.findAll({
       where: { user_id: userId },
-      include: [{ model: Product }],
+      include: [
+        {
+          model: Product,
+          attributes: [
+            "product_image_url",
+            "price",
+            "name",
+            "discount_percentage",
+          ],
+        },
+      ],
     });
-    return cartItems;
+    for (const cartItem of cartItems) {
+      productService.addDiscountInfo(cartItem.dataValues["product"].dataValues);
+      totalPriceAfterDiscount +=
+        cartItem.dataValues.quantity *
+        cartItem.dataValues.product.dataValues.price_after_discount;
+      totalPriceBeforeDiscount +=
+        cartItem.dataValues.quantity *
+        cartItem.dataValues.product.dataValues.price;
+    }
+    return { totalPriceAfterDiscount, totalPriceBeforeDiscount, cartItems };
   }
 
   // Update the quantity of an item in the cart
@@ -71,11 +93,13 @@ export default class CartService {
   }
 
   // Remove an item from the cart
-  static async removeCartItem(cartItemId: number) {
+  static async removeCartItem(cartItemId: number, userId: number) {
     const deleted = await CartItem.destroy({
       where: { cartItem_id: cartItemId },
     });
 
-    return deleted; // Returns the number of rows deleted
+    const cart = await CartService.getUserCart(userId);
+
+    return { cart, deleted }; // Returns the number of rows deleted
   }
 }

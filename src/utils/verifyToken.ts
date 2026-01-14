@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
+import { generateAccessToken } from "./generateToken";
+import { accessCookieOptions } from "../constants";
 
 dotenv.configDotenv();
 
@@ -13,57 +15,52 @@ export const verifyToken = async (
   res: Response,
   next: NextFunction
 ) => {
+  const token = req.cookies.accessToken;
+  const refreshToken = req.cookies.refreshToken;
+
   try {
-    console.log("VerifyToken Middleware: Checking authorization header...");
-    const token = req.cookies.accessToken;
-    console.log("MYtoken", JSON.stringify(req.cookies));
-
-    if (!token || token == "") {
-      console.log("This is the missing token: ", token);
-      console.log("VERIFY MIDDLEWARE:-- Authorization token is missing");
-      throw new Error(
-        "tokens missing, Please provide a valid authorization token"
-      );
-    }
-
-    //parse the token string
-    console.log("VerifyToken Middleware: Parsing token...");
-    // const token = authHeader.replace("Bearer ", "");
+    console.log(
+      "VerifyToken Middleware: Checking authorization header... ACCESS TOKEN:",
+      token
+    );
     if (!token) {
-      console.error("VerifyToken Error: Token is empty after parsing.");
-      throw new Error("Token is empty after stripping Bearer");
+      console.log("NO TOKEN", token);
+      res.status(401).json({ message: "Invalid access token" });
     }
-
-    //decode the token
-    console.log("VerifyToken Middleware: Verifying token...");
-    console.log(process.env.JWT_SECRET);
     const decodedToken = jwt.verify(
       token,
       process.env.JWT_SECRET || ""
     ) as JwtPayload;
-    console.log("FECODE: ", decodedToken);
-    // (req as CustomRequest).token = decodedToken
-    // console.log("VerifyToken Middleware: Token verified successfully.");
     req.token = decodedToken;
-    console.log(
-      "VerifyToken Middleware: Token verified successfully. Decoded token:",
-      decodedToken
-    );
 
-    next();
+    return next();
   } catch (err: any) {
-    if (err instanceof jwt.JsonWebTokenError) {
-      console.error("JWT Error :", err.message);
-      res.status(403).json({ message: "Invalid token." });
-      return;
-    } else if (err instanceof jwt.TokenExpiredError) {
-      console.error("JWT Expired Error:", err.message);
-      res.status(403).json({ message: "Token expired." });
-      return;
-    } else {
-      console.error("VerifyToken Middleware: Unexpected error:", err.message);
-      res.status(403).json({ message: err.message });
-      return;
+    if (err instanceof jwt.TokenExpiredError) {
+      try {
+        if (refreshToken) {
+          const decodedrefresh = jwt.verify(
+            refreshToken,
+            process.env.JWT_SECRET as string
+          );
+          const newAccesstoken = generateAccessToken({
+            id: (decodedrefresh as any)?.id,
+            role: "user",
+          });
+          req.token = decodedrefresh;
+
+          res.cookie("accessToken", newAccesstoken, accessCookieOptions);
+          return next();
+        }
+      } catch (error) {
+        console.log("There is a refresh: / new Error ", error.message);
+        if (!refreshToken) {
+          res.status(401).json({ message: "Refresh token missing" });
+          return;
+        }
+
+        res.status(403).json({ message: "Invalid access token" });
+        return;
+      }
     }
   }
 };
