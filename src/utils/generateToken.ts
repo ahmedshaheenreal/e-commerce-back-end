@@ -13,7 +13,7 @@ export function generateToken(payload: any) {
 export function generateAccessToken(payload: any) {
   if (payload.role === "user" || (payload.role === "merchant" && payload.id)) {
     {
-      const token = jwt.sign(payload, secret, { expiresIn: "15s" });
+      const token = jwt.sign(payload, secret, { expiresIn: "60m" });
 
       return token;
     }

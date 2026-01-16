@@ -74,29 +74,38 @@ export default class UserService {
     console.log("Updated user after password change:", user);
     console.log("Updated lastPasswordChange:", user.lastPasswordChange); // Log for verification
 
-    await sendPasswordChangeEmail(user.email, `${user.firstName} ${user.lastName}`);
+    await sendPasswordChangeEmail(
+      user.email,
+      `${user.firstName} ${user.lastName}`
+    );
+  }
+
+  static async updateuserInfo(user: any) {
+    const [updatedCount] = await User.update(user, {
+      where: {
+        user_id: user.user_id,
+      },
+    });
+    return updatedCount;
   }
   static async updateUserAddress(userId: number, address: string) {
-  try {
-    const user = await User.findOne({
-      where: { user_id: userId },
-    });
+    try {
+      const user = await User.findOne({
+        where: { user_id: userId },
+      });
 
-    if (!user) {
-      throw new Error(`User with ID ${userId} not found.`);
+      if (!user) {
+        throw new Error(`User with ID ${userId} not found.`);
+      }
+
+      // Update the user's address
+      user.address = address;
+      await user.save(); // Save the updated information in the database
+      console.log("User address updated:", user);
+      return user;
+    } catch (error) {
+      console.error("Error updating user address:", error);
+      throw error;
     }
-
-    // Update the user's address
-    user.address = address;
-    await user.save(); // Save the updated information in the database
-    console.log("User address updated:", user);
-    return user;
-  } catch (error) {
-    console.error("Error updating user address:", error);
-    throw error;
-  }
   }
 }
-
-
-

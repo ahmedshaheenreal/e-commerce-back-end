@@ -152,7 +152,9 @@ export class productService {
     if (product === null) {
       return null;
     }
-    this.addDiscountInfo(product);
+    this.addDiscountInfo(product.dataValues);
+
+    
     return product;
   }
   // This method to get all products that belongs to category

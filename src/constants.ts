@@ -31,11 +31,11 @@ export const accessCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
-  maxAge: 15 * 60 * 1000 + 60 * 1000, // 15 minutes
+  maxAge: 65 * 60 * 1000, // 65 minutes
 };
 export const refreshCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
-  maxAge: 15 * 24 * 3600 * 60 * 1000, // 15 days
+  maxAge: 30 * 24 * 3600 * 60 * 1000, // 30 days
 };

@@ -1,5 +1,9 @@
 import express from "express";
-import { getUserProfile, updatePassword } from "../controllers/userController";
+import {
+  getUserProfile,
+  updatePassword,
+  updateUserInfo,
+} from "../controllers/userController";
 import { verifyToken } from "../utils/verifyToken";
 const router = express.Router();
 
@@ -8,4 +12,5 @@ router.get("/profile", verifyToken, getUserProfile);
 //Route to update password
 router.put("/update-password", verifyToken, updatePassword);
 
+router.put("/profile", verifyToken);
 export default router;
