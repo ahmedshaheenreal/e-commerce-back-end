@@ -12,5 +12,5 @@ router.get("/profile", verifyToken, getUserProfile);
 //Route to update password
 router.put("/update-password", verifyToken, updatePassword);
 
-router.put("/profile", verifyToken);
+router.put("/profile", verifyToken, updateUserInfo);
 export default router;

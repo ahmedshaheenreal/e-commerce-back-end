@@ -7,13 +7,14 @@ import { validateUserUpdate } from "../utils/validateUser";
 export const updateUserInfo = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const user = req.body;
-    user.user_id = (req as any).token.id;
+    console.log(user);
 
     const { error } = validateUserUpdate(user);
+    user.user_id = (req as any).token.id;
     if (error) {
       res.status(400).json(error);
       return;
@@ -27,6 +28,7 @@ export const updateUserInfo = async (
     }
 
     res.status(200).json({ message: "User Updated Successfully" });
+    console.log("User Updated Successfully");
   } catch (error) {
     res.status(500).json("Server Error");
   }
@@ -35,7 +37,7 @@ export const updateUserInfo = async (
 export const getUserProfile = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     console.log("Fetching profile for authenticated user...");
@@ -62,6 +64,7 @@ export const getUserProfile = async (
       phone: user.phone,
       dateOfBirth: user.dateOfBirth,
       profilePicture: user.profilePicture,
+      address: user.address,
       // lastPasswordChange: user.lastPasswordChange,
     });
   } catch (error) {
@@ -77,12 +80,12 @@ export const getUserProfile = async (
 export const updatePassword = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = (req as any).token.id;
     const { currentPassword, newPassword, confirmPassword } = req.body;
-
+    console.log("My DATA:---- ", currentPassword, newPassword, confirmPassword);
     // Check if newPassword matches confirmPassword
     if (newPassword !== confirmPassword) {
       res.status(400).json({ message: "Passwords do not match." });
@@ -115,7 +118,7 @@ export const updatePassword = async (
 
       if (hoursSinceLastChange < 24) {
         console.log(
-          "Password change rate limiting enforced. Less than 24 hours since last change."
+          "Password change rate limiting enforced. Less than 24 hours since last change.",
         );
         res.status(429).json({
           message: "Password can only be changed once every 24 hours.",
@@ -129,7 +132,7 @@ export const updatePassword = async (
     //verify current password
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
-      user.password
+      user.password,
     );
     if (!isPasswordValid) {
       res.status(401).json({ message: "Current password is incorrect." });
