@@ -3,8 +3,33 @@ import WishlistService from "../services/wishlistService";
 
 export default class WishlistController {
   // Create a new wishlist item
+  static async getItemIds(req: Request, res: Response) {
+    const userId = (req as any).token.id;
+    console.log(req.body);
+    // Input validation
+    if (!userId || isNaN(parseInt(userId))) {
+      res.status(400).json({
+        message: "Invalid userId or productId. They must be valid numbers.",
+      });
+
+      return;
+    }
+
+    try {
+      const items = await WishlistService.findAllWishlistItemsId(
+        parseInt(userId),
+      );
+
+      res.status(200).json(items.map((item: any) => item.product_id));
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Error fetching wishlist items.", error });
+    }
+  }
   static async createWishlistItem(req: Request, res: Response) {
-    const { userId, productId } = req.body;
+    const { productId } = req.body;
+    const userId = (req as any).token.id;
     console.log(req.body);
     // Input validation
     if (
@@ -23,7 +48,7 @@ export default class WishlistController {
     try {
       const newWishlistItem = await WishlistService.createWishlistItem(
         parseInt(userId),
-        parseInt(productId)
+        parseInt(productId),
       );
 
       res.status(201).json(newWishlistItem);
@@ -35,8 +60,12 @@ export default class WishlistController {
   // Get all wishlist items for a user
   static async getAllWishlistItems(req: Request, res: Response) {
     // const { userId } = req.params;
+    let page = req.query.page;
     const userId = (req as any).token?.id;
     // Input validation
+    if (!page || isNaN(Number(page))) {
+      page = "1";
+    }
     if (!userId || isNaN(parseInt(userId))) {
       res.status(400).json({
         message: "Invalid userId. It must be a valid number.",
@@ -45,12 +74,20 @@ export default class WishlistController {
     }
 
     try {
+      const itemIds = await WishlistService.findAllWishlistItemsId(
+        parseInt(userId),
+      );
       const wishlistItems = await WishlistService.findAllWishlistItems(
-        parseInt(userId)
+        parseInt(userId),
+        Number(page),
       );
 
-      res.status(200).json(wishlistItems);
+      res.status(200).json({
+        ...wishlistItems,
+        wishListItemIds: itemIds.map((item: any) => item.product_id),
+      });
     } catch (error) {
+      console.log(JSON.stringify(error.message));
       res
         .status(500)
         .json({ message: "Error fetching wishlist items.", error });
@@ -60,7 +97,7 @@ export default class WishlistController {
   // Remove a wishlist item
   static async deleteWishlistItem(req: Request, res: Response) {
     const { wishlistId } = req.params;
-
+    const user_id = (req as any).token.id;
     // Input validation
     if (!wishlistId || isNaN(parseInt(wishlistId))) {
       res.status(400).json({
@@ -71,7 +108,8 @@ export default class WishlistController {
 
     try {
       const deleted = await WishlistService.destroyWishlistItem(
-        parseInt(wishlistId)
+        Number(user_id),
+        parseInt(wishlistId),
       );
 
       if (!deleted) {
