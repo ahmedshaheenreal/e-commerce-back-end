@@ -4,9 +4,6 @@ import { CONSTANTS, FIELD_NAMES, PAGINATION, RATING } from "../constants";
 // Import product model
 import { Product } from "../models/ProductModel";
 
-// Import rating service
-import { ratingService } from "../services/ratingService";
-
 // Import category service
 import { categoryService } from "../services/categoryService";
 
@@ -15,12 +12,11 @@ import { productCategoryService } from "../services/productCategoryService";
 
 // Import Sequelize and Op from sequelize module
 import { Op, Sequelize } from "sequelize";
-import { response } from "express";
+
 import { OrderItem } from "../models/OrderItem";
 import { CartItem } from "../models/CartItemModel";
-import { number } from "joi";
-import { error } from "console";
 import { Category } from "../models/CategoryModel";
+import { User } from "../models/UserModel";
 
 export class productService {
   // This method to add discount information to product information
@@ -34,7 +30,7 @@ export class productService {
     productInfo.price_after_discount = productInfo.price - discountValue;
 
     productInfo.price_after_discount = parseFloat(
-      productInfo.price_after_discount.toFixed(CONSTANTS.DISCOUNT_PRECISION)
+      productInfo.price_after_discount.toFixed(CONSTANTS.DISCOUNT_PRECISION),
     );
   }
   // Method to retrieve new arrival products with optional limit
@@ -154,13 +150,12 @@ export class productService {
     }
     this.addDiscountInfo(product.dataValues);
 
-    
     return product;
   }
   // This method to get all products that belongs to category
   static async findProductsByCategory(
     categoryName: string,
-    pageNumber: number
+    pageNumber: number,
   ) {
     const categoryInfo: any =
       await categoryService.getCategoryByName(categoryName);
@@ -170,7 +165,7 @@ export class productService {
     const products: any =
       await productCategoryService.getProductsBelongsToCategory(
         categoryInfo.category_id,
-        pageNumber
+        pageNumber,
       );
     return products;
   }
@@ -184,7 +179,7 @@ export class productService {
     const products: any =
       await productCategoryService.getProductsRelatedToProduct(
         categoryInfo.category_id,
-        product_id
+        product_id,
       );
     return products;
   }
@@ -217,7 +212,7 @@ export class productService {
   static async updateStock(
     product_id: number,
     quantity: number,
-    operation: string
+    operation: string,
   ) {
     try {
       const product = await Product.findOne({
@@ -250,7 +245,8 @@ export class productService {
     });
     return cartItems;
   }
-  static async getOrderProducts(order_id: number) {
+  static async getOrderProducts(order_id: number, user_id?: number) {
+    console.log("order id in service: ", order_id);
     try {
       const products = await Product.findAll({
         include: [
@@ -259,12 +255,39 @@ export class productService {
             where: { order_id },
             attributes: [
               "quantity",
+              [
+                Sequelize.literal(
+                  "quantity*price*((100  - discount_percentage)/100)",
+                ),
+                "grandtotal",
+              ],
               [Sequelize.literal("quantity*price"), "subtotal"],
             ],
           },
+          {
+            model: User,
+            attributes: ["firstName", "lastName", "phone", "address"],
+            where: { user_id },
+            through: { attributes: [] }, // Disable through table attributes
+            required: false, // Make it optional join
+          },
         ],
-        attributes: ["price", "name", "brand_name"],
+        attributes: [
+          "discount_percentage",
+          "price",
+          "name",
+          "brand_name",
+          "product_id",
+          "product_image_url",
+        ],
+        subQuery: false, // Prevent subquery that causes issues with associations
       });
+
+      console.log("order products: ", products);
+      for (const product of products) {
+        this.addDiscountInfo(product.dataValues);
+      }
+
       return products;
     } catch (error) {
       return { status: 500, response: error };

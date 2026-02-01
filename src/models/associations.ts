@@ -131,11 +131,11 @@ export const setupAssociations = () => {
    */
 
   Product.hasMany(OrderItem, {
-    foreignKey: "porduct_id",
+    foreignKey: "product_id",
   });
 
   OrderItem.belongsTo(Product, {
-    foreignKey: "porduct_id",
+    foreignKey: "product_id",
   });
 
   Product.hasMany(CartItem, {

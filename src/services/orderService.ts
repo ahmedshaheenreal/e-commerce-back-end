@@ -1,12 +1,21 @@
+import { Transaction } from "sequelize";
 import { Order } from "../models/Order";
 
 export class orderService {
-  static async createOrder(user_id: number, total: number, status: number) {
-    const order = await Order.create({
-      user_id,
-      status,
-      total,
-    });
+  static async createOrder(
+    user_id: number,
+    total: number,
+    status: number,
+    transaction?: Transaction,
+  ) {
+    const order = await Order.create(
+      {
+        user_id,
+        status,
+        total,
+      },
+      { transaction, raw: true },
+    );
     return order;
   }
 

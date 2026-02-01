@@ -9,13 +9,14 @@ import { orderService } from "../services/orderService";
 import { OrderItem } from "../models/OrderItem";
 import { orderItemService } from "../services/orderItemService";
 import { Sequelize, Transaction } from "sequelize";
-
-
-
+import { stripe } from "../config/stripe";
+import CartService from "../services/cartServices";
+import { configDotenv } from "dotenv";
+configDotenv();
 export const getCheckoutInfo = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     // Log the request to see where the token is located
@@ -23,7 +24,9 @@ export const getCheckoutInfo = async (
     // Get the user ID from the request token (assuming authentication middleware is in place)
     const userId = (req as any).token?.id;
     if (!userId) {
-      res.status(401).json({ message: "Unauthorized, no valid user ID found." });
+      res
+        .status(401)
+        .json({ message: "Unauthorized, no valid user ID found." });
       return;
     }
     // Fetch user data using UserService
@@ -36,7 +39,7 @@ export const getCheckoutInfo = async (
 
     // Prepare the required user information for checkout
     const checkoutInfo = {
-    //   id: user.user_id,
+      //   id: user.user_id,
       firstName: user.firstName,
       lastName: user.lastName,
       phone: user.phone,
@@ -54,15 +57,15 @@ export const getCheckoutInfo = async (
 export const updateUserAddress = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
-    
     const userId = (req as any).token?.id;
 
-    
     if (!userId) {
-      res.status(401).json({ message: "Unauthorized, no valid user ID found." });
+      res
+        .status(401)
+        .json({ message: "Unauthorized, no valid user ID found." });
       return;
     }
 
@@ -79,104 +82,86 @@ export const updateUserAddress = async (
     const updatedUser = await UserService.updateUserAddress(userId, address);
 
     // Respond with a success message and updated user data
-    res.status(200).json({ message: "Address updated successfully.", user: updatedUser });
+    res
+      .status(200)
+      .json({ message: "Address updated successfully.", user: updatedUser });
   } catch (error) {
     console.error("Error updating user address:", error);
     res.status(500).json({ message: "Internal server error." });
   }
 };
 
-
-
 export const checkoutHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
+  const user_id = (req as any).token.id;
+
   try {
-    const result = await sequelize.transaction(async (t: any) => {
-      try {
-        const { user_id } = req.body;
-        //1- fetch cart data
-        const productList = await productService.getCartProducts(user_id);
-        console.log(productList[0].dataValues.CartItems);
+    // Create Stripe session FIRST (before transaction)
+    const cart = await CartService.getUserCart(user_id);
+    console.log("cart in checkout handler: ", cart);
+    const lineItems = cart.cartItems.map((product: any) => ({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: product.dataValues.product.dataValues.name,
+        },
+        unit_amount: Math.round(
+          product.dataValues.product.dataValues.price_after_discount * 100,
+        ),
+      },
+      quantity: product.dataValues.quantity,
+    }));
 
-        //2- check stock
-        for (const product of productList) {
-          const isAvaiable = await productService.checkStock(
-            product.dataValues.product_id,
-            product.dataValues.CartItems[0].dataValues.quantity
-          );
-
-          if (!isAvaiable) {
-            throw new Error(
-              `Insufficient stock for product ID ${product.dataValues.product_id}`
-            );
-          }
-        }
-        //3- calculate total
-        const total = productList.reduce((sum, product) => {
-          productService.addDiscountInfo(product.dataValues);
-          return (
-            sum +
-            product.dataValues.price_after_discount *
-              product.dataValues.CartItems[0].dataValues.quantity
-          );
-        }, 0);
-
-        //4-simulate payment
-        const simulatePatment = simulatePayment(total);
-        if (!simulatePatment) {
-          const order = await orderService.createOrder(user_id, total, 0);
-
-          throw new Error("Patment Faild");
-        }
-        //5- update order , orderItem tables ans stock in product table
-
-        const order = await orderService.createOrder(user_id, total, 1);
-
-        const orderItems = productList.map((product) => ({
-          quantity: product.dataValues.CartItems[0].dataValues.quantity,
-          user_id,
-          product_id: product.dataValues.product_id,
-          order_id: order.dataValues.order_id,
-        }));
-
-        await orderItemService.bulkCreateItems(orderItems);
-
-        //update the stock
-        for (const product of productList) {
-          await productService.updateStock(
-            product.dataValues.product_id,
-            product.dataValues.CartItems[0].dataValues.quantity,
-            "sub"
-          );
-        }
-        await t.commit();
-
-        res.status(202).json({
-          order: productList,
-          total,
-        });
-      } catch (error) {
-        await t.rollback();
-        res.status(400).json({
-          message: error.message,
-        });
-      }
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: lineItems,
+      success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/cart`,
     });
+
+    // THEN start transaction for DB operations
+    const transaction = await sequelize.transaction();
+
+    try {
+      const order = (
+        await orderService.createOrder(
+          user_id,
+          cart.totalPriceAfterDiscount,
+          1,
+          transaction,
+        )
+      ).dataValues;
+      console.log("order created: ", order);
+      await orderItemService.addOrderItemsFromCart(
+        (order as any).order_id,
+        cart.cartItems,
+        transaction,
+      );
+      await CartService.clearCart(user_id);
+
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+
+    res.json({ url: session.url });
   } catch (error) {
-    console.log(error.message);
+    console.log("checkout error: ", error);
+    next(error);
   }
 };
-
 export const orderHistory = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
-    const { user_id } = req.body;
+    const user_id = (req as any).token.id;
     const orders = await orderService.getAllOrders(user_id);
     res.status(200).json(orders);
   } catch (error) {
@@ -191,15 +176,15 @@ export const orderHistory = async (
 export const orderDetails = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const order_id = parseInt(req.params.order_id);
-    const { user_id } = req.body;
+    const user_id = (req as any).token.id;
 
     if (!order_id) throw new Error("no order id provided");
 
-    const orderItems = await productService.getOrderProducts(order_id);
+    const orderItems = await productService.getOrderProducts(order_id, user_id);
 
     res.status(200).json(orderItems);
   } catch (error) {

@@ -4,7 +4,8 @@ import CartService from "../services/cartServices";
 export default class CartController {
   // Add an item to the cart
   static async addItemToCart(req: Request, res: Response) {
-    const { userId, productId, quantity } = req.body;
+    const { productId, quantity } = req.body;
+    const userId = (req as any).token.id;
     if (parseInt(userId) !== (req as any).token.id) {
       res.status(403).json({ nmessage: "Unauthorized" });
       return;
@@ -29,7 +30,7 @@ export default class CartController {
       const newCartItem = await CartService.addItemToCart(
         parseInt(userId),
         parseInt(productId),
-        parseInt(quantity)
+        parseInt(quantity),
       );
 
       res.status(201).json(newCartItem);
@@ -82,7 +83,7 @@ export default class CartController {
     try {
       const updatedCartItem = await CartService.updateCartItem(
         parseInt(cartItemId),
-        parseInt(newQuantity)
+        parseInt(newQuantity),
       );
 
       res.status(200).json(updatedCartItem);
@@ -106,7 +107,7 @@ export default class CartController {
     try {
       const { cart, deleted } = await CartService.removeCartItem(
         parseInt(cartItemId),
-        Number(userId)
+        Number(userId),
       );
 
       if (!deleted) {
