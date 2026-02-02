@@ -30,6 +30,8 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true, // if using cookies or auth headers
 };
+app.set("trust proxy", 1);
+
 app.use(cors(corsOptions));
 
 app.use(cookieParser());
