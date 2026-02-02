@@ -8,17 +8,34 @@ dotenv.config();
 
 // Initialize Sequelize with MySQL database credentials
 console.log("environment: ", process.env.DB_NAME);
-export const sequelize = new Sequelize(
-  process.env.DB_NAME as string,
-  process.env.DB_USER as string,
-  (process.env.DB_PASSWORD as string) || "1234",
-  {
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    dialect: "mysql",
-    logging: false,
-  }
-);
+// export const sequelize = new Sequelize(
+//   process.env.DB_NAME as string,
+//   process.env.DB_USER as string,
+//   (process.env.DB_PASSWORD as string) || "1234",
+//   {
+//     host: process.env.DB_HOST,
+//     port: Number(process.env.DB_PORT),
+//     dialect: "mysql",
+//     logging: false,
+//   }
+// );
+
+export const sequelize = new Sequelize(process.env.DB_CONNECTION_STRING!, {
+  dialect: "postgres",
+  logging: false,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
+  },
+  pool: {
+    max: 5,
+    min: 0,
+    idle: 10000,
+    acquire: 30000,
+  },
+});
 
 // Make a connection with database
 export const connectToDB = async () => {
@@ -34,7 +51,7 @@ export const connectToDB = async () => {
       console.error("Unable to connect to the database:", error.message);
     } else {
       console.error(
-        "An unknown error occurred while trying to connect to the database."
+        "An unknown error occurred while trying to connect to the database.",
       );
     }
   }
@@ -50,7 +67,7 @@ export const closeDb = async () => {
       console.error("Unable to connect to the database:", error.message);
     } else {
       console.error(
-        "An unknown error occurred while trying to close the database connection."
+        "An unknown error occurred while trying to close the database connection.",
       );
     }
   }

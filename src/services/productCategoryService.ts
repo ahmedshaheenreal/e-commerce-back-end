@@ -20,16 +20,26 @@ export class productCategoryService {
   // This function to get all products that belongs to category based on pagination
   static async getProductsBelongsToCategory(
     category_id: number,
-    page_number: number
+    page_number: number,
   ) {
     const query = `
-    SELECT p.product_id, p.name, p.price, p.brand_name, p.discount_percentage, p.product_image_url, p.averageRating,p.NumberOfRatings,
-           (SELECT COUNT(*) FROM product_category pc WHERE pc.category_id = :categoryId) AS totalCount
-    FROM product p
-    JOIN product_category pc ON p.product_id = pc.product_id
-    WHERE pc.category_id = :categoryId
-    LIMIT :limit OFFSET :offset;
-  `;
+  SELECT 
+    p.product_id,
+    p.name,
+    p.price,
+    p.brand_name,
+    p.discount_percentage,
+    p.product_image_url,
+    p."averageRating",
+    p."NumberOfRatings",
+    (SELECT COUNT(*) 
+     FROM product_category pc 
+     WHERE pc.category_id = :categoryId) AS "totalCount"
+  FROM product p
+  JOIN product_category pc ON p.product_id = pc.product_id
+  WHERE pc.category_id = :categoryId
+  LIMIT :limit OFFSET :offset;
+`;
 
     const products: any = await sequelize.query(query, {
       replacements: {
@@ -47,12 +57,12 @@ export class productCategoryService {
         0
       ) {
         result.number_of_pages = Math.floor(
-          products[0][FIELD_NAMES.TOTAL_COUNT] / PAGINATION.DEFAULT_PAGE_SIZE
+          products[0][FIELD_NAMES.TOTAL_COUNT] / PAGINATION.DEFAULT_PAGE_SIZE,
         );
       } else {
         result.number_of_pages =
           Math.floor(
-            products[0][FIELD_NAMES.TOTAL_COUNT] / PAGINATION.DEFAULT_PAGE_SIZE
+            products[0][FIELD_NAMES.TOTAL_COUNT] / PAGINATION.DEFAULT_PAGE_SIZE,
           ) + 1;
       }
       for (const product of products) {
@@ -66,10 +76,10 @@ export class productCategoryService {
   // This function to get all products that are related to specific product
   static async getProductsRelatedToProduct(
     category_id: number,
-    product_id: number
+    product_id: number,
   ) {
     const query = `
-    SELECT p.product_id, p.name, p.price, p.brand_name, p.discount_percentage, p.product_image_url, p.averageRating,p.NumberOfRatings
+    SELECT p.product_id, p.name, p.price, p.brand_name, p.discount_percentage, p.product_image_url, p."averageRating",p."NumberOfRatings"
     FROM product p
     JOIN product_category pc ON p.product_id = pc.product_id
     WHERE pc.category_id = :categoryId AND pc.product_id != :productId

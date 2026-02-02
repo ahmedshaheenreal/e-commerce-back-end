@@ -190,7 +190,7 @@ export class productService {
       group: ["brand_name", "brand_image_url"],
     });
     console.log(brands);
-    return brands.map((e) => e.dataValues);
+    return brands.map((e: any) => e.dataValues);
   }
 
   //check stock availabilty
@@ -297,13 +297,15 @@ export class productService {
 
 export const getProductByBrand = async (brand: string, page: number) => {
   try {
+    console.log("brand in service: ", brand);
     const { rows: products, count } = await Product.findAndCountAll({
       where: {
-        brand_name: `${brand}`,
+        brand_name: `${brand.replace(/-/g, " ")}`,
       },
       limit: 12,
       offset: page && page > 0 ? (page - 1) * 12 : 0,
     });
+    console.log("products before adding discount info: ", products);
 
     for (const product of products) {
       productService.addDiscountInfo(product.dataValues);

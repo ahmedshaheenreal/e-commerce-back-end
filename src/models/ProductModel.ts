@@ -1,10 +1,10 @@
-import { DataTypes } from 'sequelize'
-import { sequelize } from '../config/db'
-import { Merchant } from './MerchantModel'
+import { DataTypes } from "sequelize";
+import { sequelize } from "../config/db";
+import { Merchant } from "./MerchantModel";
 
 // Create a PRODUCTS Schema
 export const Product = sequelize.define(
-  'product',
+  "product",
   {
     product_id: {
       type: DataTypes.INTEGER,
@@ -43,7 +43,7 @@ export const Product = sequelize.define(
       allowNull: false,
       references: {
         model: Merchant, // Reference to Merchants table
-        key: 'merchant_id',
+        key: "merchant_id",
       },
     },
     brand_name: {
@@ -75,10 +75,12 @@ export const Product = sequelize.define(
     averageRating: {
       type: DataTypes.FLOAT,
       defaultValue: 0,
+      field: "averageRating", // exact DB column
     },
     NumberOfRatings: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
+      field: "NumberOfRatings", // exact DB column (case-sensitive)
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -90,7 +92,7 @@ export const Product = sequelize.define(
     },
   },
   {
-    tableName: 'product',
+    tableName: "product",
     timestamps: true, // Automatically creates `createdAt` and `updatedAt` fields
-  }
-)
+  },
+);

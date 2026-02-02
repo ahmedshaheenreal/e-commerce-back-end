@@ -2,16 +2,14 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // Fetch existing product IDs
     const products = await queryInterface.sequelize.query(
       "SELECT product_id FROM product;",
-      { type: Sequelize.QueryTypes.SELECT }
+      { type: Sequelize.QueryTypes.SELECT },
     );
 
-    // Fetch existing category IDs
     const categories = await queryInterface.sequelize.query(
       "SELECT category_id FROM category;",
-      { type: Sequelize.QueryTypes.SELECT }
+      { type: Sequelize.QueryTypes.SELECT },
     );
 
     if (!products.length || !categories.length) {
@@ -19,14 +17,19 @@ module.exports = {
     }
 
     const productCategories = [];
+    const usedPairs = new Set();
 
-    // Assign 1–3 random categories per product
     for (const product of products) {
-      const shuffledCategories = categories
+      const shuffledCategories = [...categories]
         .sort(() => 0.5 - Math.random())
         .slice(0, Math.floor(Math.random() * 3) + 1);
 
       for (const category of shuffledCategories) {
+        const key = `${product.product_id}-${category.category_id}`;
+        if (usedPairs.has(key)) continue;
+
+        usedPairs.add(key);
+
         productCategories.push({
           product_id: product.product_id,
           category_id: category.category_id,
@@ -37,7 +40,7 @@ module.exports = {
     await queryInterface.bulkInsert("product_category", productCategories);
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface) {
     await queryInterface.bulkDelete("product_category", null, {});
   },
 };

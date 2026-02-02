@@ -16,7 +16,7 @@ module.exports = {
       image_url: "https://www.via.placeholder.com/300",
     }));
 
-    // await queryInterface.bulkInsert("category", categories);
+    await queryInterface.bulkInsert("category", categories);
   },
 
   async down(queryInterface, Sequelize) {

@@ -65,8 +65,9 @@ export const getProductsByBrand = async (req: Request, res: Response) => {
     return res.status(400).json({ error: error.details[0].message });
   }
   const brand = req.params.brandName;
+  console.log("BRAND in controller: ", brand);
   const result = await getProductByBrand(brand, page);
-  const { status, products } = result;
+  const { status } = result;
   res.status(status).json(result);
 };
 
@@ -84,11 +85,11 @@ export const createProductController = async (req: Request, res: Response) => {
 // Retrieve all new arrivals products
 export const getAllNewArrivalsProducts = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   const products = await productService.getNewArrivalsProducts(
     9,
-    Number(req.query.page) || 1
+    Number(req.query.page) || 1,
   );
   res.status(200).json(products);
 };
@@ -96,7 +97,7 @@ export const getAllNewArrivalsProducts = async (
 // Retrieve only 4 new arrivals products
 export const getNewArrivalsProducts = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   const products = await productService.getNewArrivalsProducts(4);
   res.status(200).json(products);
@@ -105,7 +106,7 @@ export const getNewArrivalsProducts = async (
 // Retrieve all products where either the product brand or the product name contains the keyword entered by the user
 export const findProductsByText = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   const text = req.params.text;
   const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
@@ -116,7 +117,7 @@ export const findProductsByText = async (
 // Retrieve a specific product based on product id
 export const findProductById = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   // Validate product id using Joi
   const { error: err } = productIdSchema.validate(req.params.id);
@@ -136,7 +137,7 @@ export const findProductById = async (
 // Retrieve all products that are related to category
 export const findProductsByCategory = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   // Validate page number using Joi
   if (!req.query.page) {
@@ -152,7 +153,7 @@ export const findProductsByCategory = async (
   const categoryName = req.params.category;
   const products = await productService.findProductsByCategory(
     categoryName,
-    pageNumber
+    pageNumber,
   );
   res.status(200).json(products);
 };
@@ -160,7 +161,7 @@ export const findProductsByCategory = async (
 // Retrieve related products for specfic product
 export const getRelatedProducts = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   // Validate product id using Joi
   const { error: err } = productIdSchema.validate(req.params.productId);
@@ -173,7 +174,7 @@ export const getRelatedProducts = async (
   const categoryName = req.params.category;
   const products = await productService.getRelatedProducts(
     categoryName,
-    product_id
+    product_id,
   );
   res.status(200).json(products);
 };
@@ -199,7 +200,7 @@ export const getBrands = async (req: Request, res: Response): Promise<any> => {
 
 export const getHandPicked = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   try {
     const category_id = parseInt(req.params.categoryId);
@@ -214,7 +215,7 @@ export const getHandPicked = async (
     }
     const handPicked = await productCategoryService.handPickedService(
       category_id,
-      page
+      page,
     );
 
     res.status(200).json(handPicked);
@@ -237,7 +238,7 @@ export const getHandPicked = async (
 
 export const getHandpickedCollectionList = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   try {
     const handpickedCollectionList =
