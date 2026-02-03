@@ -47,7 +47,7 @@ export const verifyToken = async (
             id: (decodedrefresh as any)?.id,
             role: "user",
           });
-          req.token = decodedrefresh;
+          req.token = newAccesstoken;
 
           res.cookie("accessToken", newAccesstoken, accessCookieOptions);
           return next();
