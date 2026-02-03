@@ -25,7 +25,7 @@ dotenv.config();
 export const app = express();
 
 const corsOptions = {
-  origin: "https://coaral.netlify.app", // your frontend URL
+  origin: ["https://coaral.netlify.app", "http://localhost:3000"], // your frontend URL
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true, // if using cookies or auth headers
