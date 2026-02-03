@@ -8,12 +8,13 @@ dotenv.configDotenv();
 
 export interface CustomRequest extends Request {
   token?: string | JwtPayload;
+  cookies: { [key: string]: string };
 }
 
 export const verifyToken = async (
   req: CustomRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const token = req.cookies.accessToken;
   const refreshToken = req.cookies.refreshToken;
@@ -21,7 +22,7 @@ export const verifyToken = async (
   try {
     console.log(
       "VerifyToken Middleware: Checking authorization header... ACCESS TOKEN:",
-      token
+      token,
     );
     if (!token) {
       console.log("NO TOKEN", token);
@@ -29,7 +30,7 @@ export const verifyToken = async (
     }
     const decodedToken = jwt.verify(
       token,
-      process.env.JWT_SECRET || ""
+      process.env.JWT_SECRET || "",
     ) as JwtPayload;
     req.token = decodedToken;
 
@@ -40,7 +41,7 @@ export const verifyToken = async (
         if (refreshToken) {
           const decodedrefresh = jwt.verify(
             refreshToken,
-            process.env.JWT_SECRET as string
+            process.env.JWT_SECRET as string,
           );
           const newAccesstoken = generateAccessToken({
             id: (decodedrefresh as any)?.id,
