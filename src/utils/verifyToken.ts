@@ -24,10 +24,7 @@ export const verifyToken = async (
       "VerifyToken Middleware: Checking authorization header... ACCESS TOKEN:",
       token,
     );
-    if (!token) {
-      console.log("NO TOKEN", token);
-      res.status(401).json({ message: "Invalid access token" });
-    }
+
     const decodedToken = jwt.verify(
       token,
       process.env.JWT_SECRET || "",
