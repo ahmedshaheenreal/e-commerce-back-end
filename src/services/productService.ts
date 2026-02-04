@@ -189,7 +189,6 @@ export class productService {
       attributes: ["brand_image_url", "brand_name"],
       group: ["brand_name", "brand_image_url"],
     });
-    console.log(brands);
     return brands.map((e: any) => e.dataValues);
   }
 
@@ -203,7 +202,6 @@ export class productService {
     if (!product) {
       throw new Error("Product not found");
     }
-    console.log(product.dataValues.stock, "quantity: " + quantity);
     if (product.dataValues.stock >= quantity) return true;
 
     return false;
@@ -283,7 +281,6 @@ export class productService {
         subQuery: false, // Prevent subquery that causes issues with associations
       });
 
-      console.log("order products: ", products);
       for (const product of products) {
         this.addDiscountInfo(product.dataValues);
       }
@@ -297,7 +294,6 @@ export class productService {
 
 export const getProductByBrand = async (brand: string, page: number) => {
   try {
-    console.log("brand in service: ", brand);
     const { rows: products, count } = await Product.findAndCountAll({
       where: {
         brand_name: `${brand.replace(/-/g, " ")}`,
@@ -305,12 +301,10 @@ export const getProductByBrand = async (brand: string, page: number) => {
       limit: 12,
       offset: page && page > 0 ? (page - 1) * 12 : 0,
     });
-    console.log("products before adding discount info: ", products);
 
     for (const product of products) {
       productService.addDiscountInfo(product.dataValues);
     }
-    console.log("products by brand: ", products);
     return {
       status: 200,
       products: products,

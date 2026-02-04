@@ -16,7 +16,6 @@ const schema = JOI.object({
   brandName: JOI.string().required(),
 });
 import { Custom404Error } from "../services/productCategoryService";
-import { count } from "console";
 // Joi validation schema for product id property
 const productIdSchema = JOI.number().integer().min(1);
 
@@ -65,7 +64,6 @@ export const getProductsByBrand = async (req: Request, res: Response) => {
     return res.status(400).json({ error: error.details[0].message });
   }
   const brand = req.params.brandName;
-  console.log("BRAND in controller: ", brand);
   const result = await getProductByBrand(brand, page);
   const { status } = result;
   res.status(status).json(result);

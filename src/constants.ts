@@ -1,3 +1,5 @@
+import { CookieOptions } from "express";
+
 export const CONSTANTS = {
   MONTH_MAPPING: {
     1: 10,
@@ -27,19 +29,32 @@ export const PAGINATION = {
 
 export const SEPARATOR = "-%-";
 
-export const accessCookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "none" as const,
-  // MUST be none for Netlify ↔ Render
+export const accessCookieOptions: CookieOptions =
+  process.env.NODE_ENV === "production"
+    ? {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 65 * 60 * 1000,
+      }
+    : {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: 65 * 60 * 1000,
+      };
 
-  maxAge: 65 * 60 * 1000, // 65 minutes
-};
-export const refreshCookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "none" as const,
-  // MUST be none for Netlify ↔ Render
-
-  maxAge: 30 * 24 * 3600 * 60 * 1000, // 30 days
-};
+export const refreshCookieOptions: CookieOptions =
+  process.env.NODE_ENV === "production"
+    ? {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 30 * 24 * 3600 * 60 * 1000,
+      }
+    : {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: 30 * 24 * 3600 * 60 * 1000,
+      };
