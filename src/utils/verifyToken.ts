@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
 import { generateAccessToken } from "./generateToken";
-import { accessCookieOptions } from "../constants";
+import { accessCookieOptions, refreshCookieOptions } from "../constants";
 
 dotenv.configDotenv();
 
@@ -17,7 +17,8 @@ export const verifyToken = async (
 ) => {
   const accessToken = req.cookies.accessToken;
   const refreshToken = req.cookies.refreshToken;
-
+  console.log("Access Token:", accessCookieOptions);
+  console.log("Refresh Token:", refreshCookieOptions);
   // 🔴 No access token at all
   if (!accessToken) {
     if (!refreshToken) {
