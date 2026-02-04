@@ -18,7 +18,10 @@ export const verifyToken = async (
   const accessToken = req.cookies.accessToken;
   const refreshToken = req.cookies.refreshToken;
   console.log("Access Token:", accessCookieOptions);
+  console.log("Access Token:", accessToken);
   console.log("Refresh Token:", refreshCookieOptions);
+  console.log("Refresh Token:", refreshToken);
+
   // 🔴 No access token at all
   if (!accessToken) {
     if (!refreshToken) {
