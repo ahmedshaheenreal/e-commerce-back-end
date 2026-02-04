@@ -119,7 +119,7 @@ export const checkoutHandler = async (
       payment_method_types: ["card"],
       mode: "payment",
       line_items: lineItems,
-      success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.CLIENT_URL}/my-orders`,
       cancel_url: `${process.env.CLIENT_URL}/cart`,
     });
 
@@ -141,10 +141,11 @@ export const checkoutHandler = async (
         cart.cartItems,
         transaction,
       );
-      await CartService.clearCart(user_id);
+      await CartService.clearCart(user_id, transaction);
 
       await transaction.commit();
     } catch (error) {
+      console.log("inner transaction Rolled Back error: ", error);
       await transaction.rollback();
       throw error;
     }

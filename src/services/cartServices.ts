@@ -1,3 +1,4 @@
+import { Transaction } from "sequelize";
 import { CartItem } from "../models/CartItemModel";
 import { Product } from "../models/ProductModel";
 import { productService } from "./productService";
@@ -103,9 +104,10 @@ export default class CartService {
     return { cart, deleted }; // Returns the number of rows deleted
   }
   // Clear the entire cart for a user
-  static async clearCart(userId: number) {
+  static async clearCart(userId: number, transaction: Transaction) {
     const deleted = await CartItem.destroy({
       where: { user_id: userId },
+      transaction: transaction,
     });
     return deleted; // Returns the number of rows deleted
   }
