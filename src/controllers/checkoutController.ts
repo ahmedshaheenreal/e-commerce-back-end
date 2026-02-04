@@ -162,10 +162,13 @@ export const orderHistory = async (
   next: NextFunction,
 ) => {
   try {
+    console.log("ORDER HISTORY CONTROLLER");
     const user_id = (req as any).token.id;
     const orders = await orderService.getAllOrders(user_id);
     res.status(200).json(orders);
   } catch (error) {
+    console.log("ERROR ORDER HISTORY CONTROLLER", error);
+
     res.status(500).json({
       status: "error",
       message: error.message,
