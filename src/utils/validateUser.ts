@@ -5,7 +5,7 @@ export function validateUserSignUp(user: object) {
   const schema = Joi.object({
     firstName: Joi.string().alphanum().min(2).max(15).required(),
     lastName: Joi.string().alphanum().min(2).max(15).required(),
-    address: Joi.string().min(20).max(100).required(),
+    address: Joi.string().min(5).max(100).required(),
     email: Joi.string()
       .email({
         minDomainSegments: 1,
