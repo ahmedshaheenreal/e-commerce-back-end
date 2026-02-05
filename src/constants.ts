@@ -34,7 +34,7 @@ export const accessCookieOptions: CookieOptions =
     ? {
         httpOnly: true,
         secure: true,
-        sameSite: "none",
+        sameSite: "lax",
         maxAge: 65 * 60 * 1000,
       }
     : {
@@ -49,7 +49,7 @@ export const refreshCookieOptions: CookieOptions =
     ? {
         httpOnly: true,
         secure: true,
-        sameSite: "none",
+        sameSite: "lax",
         maxAge: 30 * 24 * 3600 * 60 * 1000,
       }
     : {
