@@ -33,12 +33,14 @@ export const accessCookieOptions: CookieOptions =
   process.env.NODE_ENV === "production"
     ? {
         httpOnly: true,
+        path: "/", // 🔴 REQUIRED
         secure: true,
         sameSite: "lax",
         maxAge: 65 * 60 * 1000,
       }
     : {
         httpOnly: true,
+        path: "/", // 🔴 REQUIRED
         secure: false,
         sameSite: "lax",
         maxAge: 65 * 60 * 1000,
@@ -48,12 +50,14 @@ export const refreshCookieOptions: CookieOptions =
   process.env.NODE_ENV === "production"
     ? {
         httpOnly: true,
+        path: "/", // 🔴 REQUIRED
         secure: true,
         sameSite: "lax",
         maxAge: 30 * 24 * 3600 * 60 * 1000,
       }
     : {
         httpOnly: true,
+        path: "/", // 🔴 REQUIRED
         secure: false,
         sameSite: "lax",
         maxAge: 30 * 24 * 3600 * 60 * 1000,
