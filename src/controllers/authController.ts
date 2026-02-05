@@ -27,7 +27,7 @@ configDotenv();
 export const refreshController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   //this will send an access token if the provided refresh token is valid
 
@@ -40,7 +40,7 @@ export const refreshController = async (
     }
     const { id, role } = jwt.verify(
       refreshToken,
-      process.env.JWT_SECRET || "secret"
+      process.env.JWT_SECRET || "secret",
     ) as AuthJwtPayload;
 
     const payload = {
@@ -76,7 +76,7 @@ export const refreshController = async (
 export const logOut = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     res
@@ -93,7 +93,7 @@ export const logOut = async (
 export const signUp = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     let result: any; //mercahnt or user object
@@ -175,14 +175,14 @@ export const signUp = async (
     //   token,
     // })
   } catch (error) {
-    next(error);
+    res.status(500).json({ error: error.message });
   }
 };
 
 export const login = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { value, error } = validateLoginUser(req.body);
 
