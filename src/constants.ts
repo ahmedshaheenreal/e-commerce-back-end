@@ -36,6 +36,7 @@ export const accessCookieOptions: CookieOptions =
         path: "/", // 🔴 REQUIRED
         secure: true,
         sameSite: "lax",
+        domain: ".shaheenshop.online", // Shared across all subdomains
         maxAge: 65 * 60 * 1000,
       }
     : {
@@ -53,6 +54,7 @@ export const refreshCookieOptions: CookieOptions =
         path: "/", // 🔴 REQUIRED
         secure: true,
         sameSite: "lax",
+        domain: ".shaheenshop.online", // Shared across all subdomains
         maxAge: 30 * 24 * 3600 * 60 * 1000,
       }
     : {
