@@ -85,7 +85,7 @@ export const updatePassword = async (
   try {
     const userId = (req as any).token.id;
     const { currentPassword, newPassword, confirmPassword } = req.body;
-    console.log("My DATA:---- ", currentPassword, newPassword, confirmPassword);
+
     // Check if newPassword matches confirmPassword
     if (newPassword !== confirmPassword) {
       res.status(400).json({ message: "Passwords do not match." });
@@ -104,9 +104,6 @@ export const updatePassword = async (
       res.status(404).json({ message: "User not found." });
       return;
     }
-
-    console.log("Current password provided:", currentPassword);
-    console.log("Current user password hash:", user.password);
 
     /// Check the last password change date to implement rate limiting
     if (user.lastPasswordChange) {
