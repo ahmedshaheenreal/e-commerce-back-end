@@ -54,16 +54,16 @@ export function validateUserSignUp(user: object) {
     dateOfBirth: Joi.string().required().messages({
       "any.required": "Date of birth is required",
     }),
-
     password: Joi.string()
-      .pattern(/^[a-zA-Z0-9]{3,30}$/)
+      .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,30}$/)
+      .required()
       .min(6)
       .max(30)
-      .required()
       .messages({
-        "string.pattern.base": "Password can only contain letters and numbers",
         "string.min": "Password must be at least 6 characters",
         "string.max": "Password must not exceed 30 characters",
+        "string.pattern.base":
+          "Password must contain at least one uppercase letter, one lowercase letter, and one number",
         "any.required": "Password is required",
       }),
   });
@@ -132,12 +132,24 @@ export function validateLoginUser(user: object) {
         minDomainSegments: 2,
         tlds: { allow: ["com", "net", "org", "io"] },
       })
-      .required(),
+      .required()
+      .messages({
+        "string.email": "Please enter a valid email address",
+        "any.required": "Email is required",
+      }),
+
     password: Joi.string()
-      .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
+      .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,30}$/)
+      .required()
       .min(6)
       .max(30)
-      .required(),
+      .messages({
+        "string.min": "Password must be at least 6 characters",
+        "string.max": "Password must not exceed 30 characters",
+        "string.pattern.base":
+          "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+        "any.required": "Password is required",
+      }),
     role: Joi.string().valid("user").required(),
   });
   const { value, error } = schema.validate(user);
