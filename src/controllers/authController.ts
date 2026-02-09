@@ -84,6 +84,7 @@ export const logOut = async (
       .clearCookie("refreshTOken")
       .status(203)
       .json({ success: true });
+    console.log("LOGGEd OUT");
   } catch (error) {
     res.status(500).json({ error });
     console.error(error);
@@ -169,6 +170,7 @@ export const signUp = async (
         success: true,
         role: req.body.role,
       });
+    console.log({ success: true, role: req.body.role });
     return;
     // res.status(201).json({
     //   success: true,
