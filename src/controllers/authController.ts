@@ -80,8 +80,8 @@ export const logOut = async (
 ) => {
   try {
     res
-      .clearCookie("accessToken")
-      .clearCookie("refreshTOken")
+      .clearCookie("accessToken", accessCookieOptions)
+      .clearCookie("refreshTOken", refreshCookieOptions)
       .status(203)
       .json({ success: true });
     console.log("LOGGEd OUT");
